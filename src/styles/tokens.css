@@ -1,0 +1,33 @@
+/* ==========================================================================
+   Design tokens — SPEC.md §3. Values are verbatim from the SPEC.
+   5 color tokens, 3 font roles. No other colors anywhere.
+   ========================================================================== */
+
+:root {
+  /* §3.1 Color — 5 tokens, no more ------------------------------------ */
+  --paper: #FAF9F5;    /* background (warm paper) */
+  --ink: #1C2333;      /* text, diagram strokes (deep ink-navy) */
+  --accent: #B08D2E;   /* awards, active vertex, links on hover (muted medal gold) */
+  --slate: #5B6472;    /* secondary text, captions */
+  --hairline: #E5E2D9; /* borders, diagram hairlines */
+
+  /* §3.2 Typography — 3 font roles ------------------------------------- */
+  /* Display / headings: math-journal serif that harmonizes with KaTeX. */
+  --font-display: "Libertinus Serif", "STIX Two Text", Georgia, serif;
+  /* Body / UI: Inter (system-ui fallback). */
+  --font-body: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Code: JetBrains Mono. (Math uses KaTeX defaults, wired in stage 5.) */
+  --font-code: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  /* §3.2 scale — 1.25 modular scale on a 17px base --------------------- */
+  --text--1: 0.8rem;      /* 13.6px — captions, meta */
+  --text-0: 1rem;         /* 17px — body */
+  --text-1: 1.25rem;      /* 21.25px */
+  --text-2: 1.5625rem;    /* 26.6px */
+  --text-3: 1.9531rem;    /* 33.2px — h1 */
+
+  --leading-body: 1.6;    /* §3.2 generous line-height */
+
+  /* §3.4 layout -------------------------------------------------------- */
+  --measure: 72ch;        /* max content width for text */
+}
