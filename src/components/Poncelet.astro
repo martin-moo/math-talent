@@ -1,0 +1,587 @@
+---
+/**
+ * Poncelet.astro — the porism diagram (SPEC §5, PONCELET_NOTES §6).
+ *
+ * Stage 3: renderer + interaction on the stage-2 engine. Data is passed in
+ * as `entries` (chronological ascending, like the data files); vertex k
+ * carries entries[n−1−k] — the renderer reads from the end (SPEC §5.1), so
+ * the latest achievement is vertex 0 and starts at 12 o'clock.
+ *
+ * The full figure is rendered server-side at t₀ = π/2: that static SVG is
+ * the no-JS / print / reduced-data fallback (§5.6). The client island only
+ * recomputes `vertices(n, a, b, s, t)` per frame and rewrites attributes —
+ * the honest family sweep, never an affine-faked rotation (§5.2 hard rule).
+ *
+ * Geometry (SVG user units): viewBox 960×680, center (480, 340), outer
+ * semi-axes a=380, b=260. The engine works in math coordinates (y up); the
+ * renderer negates y, which maps math-CCW to visual-CCW.
+ */
+import { solveInnerScale, vertices, type Vec2 } from '../lib/poncelet/engine';
+
+export interface PonceletEntry {
+  id: string;
+  title: string;
+  shortName: string;
+  date: string; // ISO month "YYYY-MM"
+  award: string;
+}
+
+interface Props {
+  entries: PonceletEntry[];
+}
+
+const { entries } = Astro.props;
+const n = entries.length; // engine throws at build time if n < 3
+
+// --- geometry constants -------------------------------------------------
+const W = 960;
+const H = 690;
+const CX = W / 2;
+const CY = 350;
+const A = 380; // outer semi-axis x
+const B = 260; // outer semi-axis y
+
+const s = solveInnerScale(n, A, B);
+const T0 = Math.PI / 2; // vertex 0 starts at the top of the ellipse
+const vs = vertices(n, A, B, s, T0);
+
+// Math coords (y up) → screen coords (y down). Math-CCW stays visual-CCW.
+const SX = (v: Vec2) => CX + v.x;
+const SY = (v: Vec2) => CY - v.y;
+const f = (x: number) => Number(x.toFixed(2));
+
+/**
+ * Rim-label placement relative to its vertex (screen coords). Side vertices
+ * get start/end anchoring so the text never reaches back over the dot; top/
+ * bottom vertices are centered above/below. Mirrored in the client script.
+ */
+function labelPlacement(v: Vec2): { x: number; y: number; anchor: 'start' | 'middle' | 'end' } {
+  const r = Math.hypot(v.x, v.y);
+  const ux = v.x / r;
+  const uy = v.y / r;
+  if (Math.abs(ux) > 0.5) {
+    return { x: f(Math.sign(ux) * 13), y: f(-uy * 24), anchor: ux > 0 ? 'start' : 'end' };
+  }
+  return { x: f(ux * 10), y: f(-uy * 30), anchor: 'middle' };
+}
+const TAG_DY = -15; // "Latest" tag stacked directly above the year label
+
+// Vertex k carries entries[n−1−k]: latest at vertex 0, then backward in
+// time in the positive (counterclockwise) direction (SPEC §5.1).
+const atVertex = (k: number) => entries[n - 1 - k];
+const year = (e: PonceletEntry) => e.date.slice(0, 4);
+const ariaLabel = (e: PonceletEntry) => `${e.award}, ${e.shortName} ${year(e)}`;
+
+const DEFAULT_SELECTED = 0; // IMC 2026 — featured by default on load (§5.4)
+
+// The one ornament allowed on the diagram (§5.1): a slim arc on the rim
+// near the top showing the CCW reading direction, arrowhead at its end.
+// Drawn on a 5%-scaled copy of the outer ellipse, anomalies 62° → 118°.
+const ARC_K = 1.05;
+const arcPt = (deg: number) => {
+  const th = (deg * Math.PI) / 180;
+  return { x: f(CX + ARC_K * A * Math.cos(th)), y: f(CY - ARC_K * B * Math.sin(th)) };
+};
+const arcFrom = arcPt(62);
+const arcTo = arcPt(118);
+---
+
+<figure class="poncelet" data-cx={CX} data-cy={CY} data-a={A} data-b={B} data-s={s} data-t0={T0}>
+  <p class="visually-hidden" id="poncelet-help">
+    Interactive diagram: each vertex of the polygon is an achievement. Use the
+    left and right arrow keys to move between vertices, Enter to select. The
+    full list follows the diagram.
+  </p>
+  <svg
+    viewBox={`0 0 ${W} ${H}`}
+    role="group"
+    aria-label="Poncelet porism diagram: a closed polygon inscribed in the outer ellipse and circumscribed about the inner one, one achievement per vertex"
+    aria-describedby="poncelet-help"
+  >
+    {/* Structural ellipses — the diagram strokes are ink (§3.1). */}
+    <ellipse class="outer" cx={CX} cy={CY} rx={A} ry={B} />
+    <ellipse class="inner" cx={CX} cy={CY} rx={f(s * A)} ry={f(s * B)} />
+
+    {/* Reading-direction ornament (§5.1). Sweep flag 0 = visually CCW. */}
+    <path
+      class="direction-arc"
+      d={`M ${arcFrom.x} ${arcFrom.y} A ${f(ARC_K * A)} ${f(ARC_K * B)} 0 0 0 ${arcTo.x} ${arcTo.y}`}
+      marker-end="url(#poncelet-arc-arrow)"
+    />
+    <marker
+      id="poncelet-arc-arrow"
+      viewBox="0 0 10 10"
+      refX="7"
+      refY="5"
+      markerWidth="6.5"
+      markerHeight="6.5"
+      orient="auto-start-reverse"
+    >
+      <path d="M 0 1 L 9 5 L 0 9 z" />
+    </marker>
+
+    {/* Edges as individual lines so the two edges incident to the selected
+        vertex can turn gold (§5.3). Edge k joins V_k to V_{k+1}. */}
+    {
+      vs.map((v, k) => {
+        const w = vs[(k + 1) % n];
+        return (
+          <line
+            class:list={['edge', { selected: k === DEFAULT_SELECTED || (k + 1) % n === DEFAULT_SELECTED }]}
+            data-edge={k}
+            x1={f(SX(v))}
+            y1={f(SY(v))}
+            x2={f(SX(w))}
+            y2={f(SY(w))}
+          />
+        );
+      })
+    }
+
+    {/* Vertex buttons. Not role="img" on the svg: the buttons must stay
+        exposed to assistive technology (§5.6). */}
+    {
+      vs.map((v, k) => {
+        const e = atVertex(k);
+        const lab = labelPlacement(v);
+        return (
+          <g
+            class:list={['vertex', { latest: k === 0, selected: k === DEFAULT_SELECTED }]}
+            role="button"
+            tabindex={k === DEFAULT_SELECTED ? 0 : -1}
+            aria-label={ariaLabel(e)}
+            aria-pressed={k === DEFAULT_SELECTED ? 'true' : 'false'}
+            data-index={k}
+            data-title={e.title}
+            transform={`translate(${f(SX(v))} ${f(SY(v))})`}
+          >
+            <title>{e.title}</title>
+            <circle class="hit" r="16" />
+            <circle class="halo" r="11" />
+            <circle class="dot" r="4.5" />
+            <text class="vlabel" text-anchor={lab.anchor}>
+              {k === 0 && (
+                <tspan class="latest-tag" x={lab.x} y={lab.y + TAG_DY} dy="0.35em">
+                  Latest
+                </tspan>
+              )}
+              <tspan class="vlabel-year" x={lab.x} y={lab.y} dy="0.35em">
+                {`${year(e)} · ${e.shortName}`}
+              </tspan>
+            </text>
+          </g>
+        );
+      })
+    }
+  </svg>
+  <figcaption class="poncelet-status" aria-live="polite">
+    {atVertex(DEFAULT_SELECTED).title}
+  </figcaption>
+</figure>
+
+{/* The plain list is in the HTML regardless of JS — screen readers, SEO,
+    print (§5.6). Reading order: latest first (§5.1). */}
+<section class="visually-hidden" aria-label="Achievements list">
+  <h2>Achievements</h2>
+  <ul>
+    {[...entries].reverse().map((e) => <li>{e.title}</li>)}
+  </ul>
+</section>
+
+<style>
+  .poncelet {
+    /* The diagram section may go wider than the text measure (§3.4). */
+    max-width: 60rem;
+    margin: 2.5rem auto 0;
+  }
+
+  .poncelet svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: grab;
+    /* Angular drag needs the pointer stream; page-zoom stays untouched. */
+    touch-action: none;
+    user-select: none;
+  }
+
+  .poncelet svg.dragging {
+    cursor: grabbing;
+  }
+
+  .outer {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .inner {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .direction-arc {
+    fill: none;
+    stroke: var(--slate);
+    stroke-width: 1;
+    opacity: 0.65;
+  }
+
+  #poncelet-arc-arrow path {
+    fill: var(--slate);
+    opacity: 0.65;
+  }
+
+  .edge {
+    stroke: var(--ink);
+    stroke-width: 1;
+    opacity: 0.8;
+    transition:
+      stroke 180ms ease,
+      stroke-width 180ms ease;
+  }
+
+  .edge.selected {
+    stroke: var(--accent);
+    stroke-width: 1.75;
+    opacity: 1;
+  }
+
+  .vertex {
+    cursor: pointer;
+  }
+
+  /* Our focus indicator is the halo ring; suppress the UA outline, which
+     draws a bounding-box rectangle around SVG groups. */
+  .vertex:focus {
+    outline: none;
+  }
+
+  .vertex .hit {
+    fill: transparent; /* generous pointer target around the small dot */
+  }
+
+  .vertex .halo {
+    fill: none;
+    stroke: var(--ink); /* focus indicator — gold is reserved for meaning */
+    stroke-width: 1.5;
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+
+  .vertex:focus-visible .halo {
+    opacity: 1;
+  }
+
+  .vertex .dot {
+    fill: var(--ink);
+    transition:
+      r 180ms ease,
+      fill 180ms ease;
+  }
+
+  .vertex:hover .dot {
+    r: 5.5px;
+  }
+
+  /* Gold where it means something: the latest achievement (§5.1) and the
+     selected vertex (§5.3). */
+  .vertex.latest .dot,
+  .vertex.selected .dot {
+    fill: var(--accent);
+  }
+
+  .vertex.selected .dot {
+    r: 6px;
+  }
+
+  .vlabel {
+    font-family: var(--font-body);
+    font-size: 14px;
+    fill: var(--slate);
+    transition: fill 180ms ease;
+  }
+
+  .vertex:hover .vlabel,
+  .vertex:focus-visible .vlabel,
+  .vertex.selected .vlabel {
+    fill: var(--ink);
+  }
+
+  .latest-tag {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--accent);
+  }
+
+  .poncelet-status {
+    margin: 0.75rem 0 0;
+    text-align: center;
+    font-size: var(--text--1);
+    color: var(--slate);
+  }
+
+  /* §3.3: no motion at all under reduced-motion — the SSR frame stands. */
+  @media (prefers-reduced-motion: reduce) {
+    .poncelet .edge,
+    .poncelet .dot,
+    .poncelet .halo,
+    .poncelet .vlabel {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Client island — the porism drift and its interactions (PONCELET_NOTES
+   * §6). Per frame only the family parameter t changes; the engine
+   * recomputes the honest vertex family and we rewrite attributes.
+   *
+   * Test hook: `?t=<radians>` in the URL freezes the drift at that family
+   * parameter (used for deterministic screenshots). Not a public feature.
+   */
+  import { vertices, type Vec2 } from '../lib/poncelet/engine';
+
+  const TWO_PI = 2 * Math.PI;
+  /** One revolution of the family parameter in ~90 s (SPEC §3.3). */
+  const DRIFT_RAD_PER_MS = TWO_PI / 90_000;
+  /** Pointer travel (px) before a press becomes a drag, not a click. */
+  const DRAG_THRESHOLD = 5;
+
+  document.querySelectorAll<HTMLElement>('figure.poncelet').forEach((root) => {
+    const d = root.dataset;
+    const CX = Number(d.cx);
+    const CY = Number(d.cy);
+    const A = Number(d.a);
+    const B = Number(d.b);
+    const s = Number(d.s);
+
+    const svg = root.querySelector<SVGSVGElement>('svg')!;
+    const edges = Array.from(root.querySelectorAll<SVGLineElement>('line.edge'));
+    const groups = Array.from(root.querySelectorAll<SVGGElement>('g.vertex'));
+    const n = groups.length;
+    const texts = groups.map((g) => g.querySelector<SVGTextElement>('text.vlabel')!);
+    const yearSpans = groups.map((g) => g.querySelector<SVGTextElement>('tspan.vlabel-year')!);
+    const status = root.querySelector<HTMLElement>('.poncelet-status');
+    const tagSpan = root.querySelector<SVGTextElement>('tspan.latest-tag');
+
+    let t = Number(d.t0);
+    let selected = 0;
+    let focusIndex = 0;
+
+    // ---- pause conditions (SPEC §3.3: hover, focus, reduced-motion,
+    // off-screen) ---------------------------------------------------------
+    const frozenByUrl = (() => {
+      const q = new URLSearchParams(location.search).get('t');
+      if (q === null) return false;
+      const v = Number(q);
+      if (!Number.isFinite(v)) return false;
+      t = v;
+      return true;
+    })();
+
+    let hoverPause = false;
+    let focusPause = false;
+    let dragging = false;
+    let offscreen = false;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+    let raf = 0;
+    let last: number | null = null;
+
+    const isPaused = () =>
+      frozenByUrl ||
+      dragging ||
+      hoverPause ||
+      focusPause ||
+      offscreen ||
+      document.hidden ||
+      reduced.matches;
+
+    function tick(now: number) {
+      if (last !== null) {
+        t += (now - last) * DRIFT_RAD_PER_MS;
+        render();
+      }
+      last = now;
+      raf = requestAnimationFrame(tick);
+    }
+
+    function updateRunning() {
+      const shouldRun = !isPaused();
+      if (shouldRun && !raf) {
+        last = null;
+        raf = requestAnimationFrame(tick);
+      } else if (!shouldRun && raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }
+
+    // ---- per-frame render ------------------------------------------------
+    // Same placement rule as the SSR frontmatter — keep them in sync.
+    function render() {
+      const vs: Vec2[] = vertices(n, A, B, s, t);
+      for (let k = 0; k < n; k++) {
+        const v = vs[k];
+        const w = vs[(k + 1) % n];
+        const gx = CX + v.x;
+        const gy = CY - v.y;
+        groups[k].setAttribute('transform', `translate(${gx.toFixed(2)} ${gy.toFixed(2)})`);
+        const e = edges[k];
+        e.setAttribute('x1', gx.toFixed(2));
+        e.setAttribute('y1', gy.toFixed(2));
+        e.setAttribute('x2', (CX + w.x).toFixed(2));
+        e.setAttribute('y2', (CY - w.y).toFixed(2));
+        const r = Math.hypot(v.x, v.y);
+        const ux = v.x / r;
+        const uy = v.y / r;
+        let lx: number;
+        let ly: number;
+        if (Math.abs(ux) > 0.5) {
+          lx = Math.sign(ux) * 13;
+          ly = -uy * 24;
+          texts[k].setAttribute('text-anchor', ux > 0 ? 'start' : 'end');
+        } else {
+          lx = ux * 10;
+          ly = -uy * 30;
+          texts[k].setAttribute('text-anchor', 'middle');
+        }
+        yearSpans[k].setAttribute('x', lx.toFixed(2));
+        yearSpans[k].setAttribute('y', ly.toFixed(2));
+        if (k === 0 && tagSpan) {
+          tagSpan.setAttribute('x', lx.toFixed(2));
+          tagSpan.setAttribute('y', (ly - 15).toFixed(2));
+        }
+      }
+    }
+
+    // ---- selection (click / Enter); the detail panel arrives in stage 4 --
+    function select(k: number) {
+      if (k === selected) return;
+      groups[selected].classList.remove('selected');
+      groups[selected].setAttribute('aria-pressed', 'false');
+      edges[selected].classList.remove('selected');
+      edges[(selected + n - 1) % n].classList.remove('selected');
+      selected = k;
+      groups[selected].classList.add('selected');
+      groups[selected].setAttribute('aria-pressed', 'true');
+      edges[selected].classList.add('selected');
+      edges[(selected + n - 1) % n].classList.add('selected');
+      if (status) status.textContent = groups[selected].dataset.title ?? '';
+    }
+
+    // ---- roving focus: ←/→ cycles vertices (SPEC §5.4) -------------------
+    function moveFocus(to: number) {
+      groups[focusIndex].setAttribute('tabindex', '-1');
+      focusIndex = ((to % n) + n) % n;
+      groups[focusIndex].setAttribute('tabindex', '0');
+      groups[focusIndex].focus();
+    }
+
+    groups.forEach((g, k) => {
+      g.addEventListener('click', () => {
+        if (suppressClick) return;
+        focusIndex = k;
+        groups.forEach((h, i) => h.setAttribute('tabindex', i === k ? '0' : '-1'));
+        select(k);
+      });
+      g.addEventListener('keydown', (ev) => {
+        if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
+          ev.preventDefault();
+          moveFocus(focusIndex + (ev.key === 'ArrowRight' ? 1 : -1));
+        } else if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          select(focusIndex);
+        }
+      });
+    });
+
+    // ---- drag-to-scrub: pointer-anomaly delta drives the family parameter
+    let drag: { angle: number; t: number; x: number; y: number; active: boolean } | null = null;
+    let suppressClick = false;
+
+    /** Eccentric-anomaly angle of the pointer, in math coordinates. */
+    function pointerAngle(ev: PointerEvent): number {
+      const rect = svg.getBoundingClientRect();
+      const px = ((ev.clientX - rect.left) / rect.width) * (2 * CX) - CX;
+      const py = ((ev.clientY - rect.top) / rect.height) * (2 * CY) - CY;
+      return Math.atan2(-py / B, px / A);
+    }
+
+    svg.addEventListener('pointerdown', (ev) => {
+      if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+      drag = { angle: pointerAngle(ev), t, x: ev.clientX, y: ev.clientY, active: false };
+    });
+
+    svg.addEventListener('pointermove', (ev) => {
+      if (!drag) return;
+      if (!drag.active) {
+        if (Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) < DRAG_THRESHOLD) return;
+        drag.active = true;
+        dragging = true;
+        svg.classList.add('dragging');
+        svg.setPointerCapture(ev.pointerId); // capture only once truly dragging,
+        updateRunning(); // so plain clicks still target the vertex buttons
+      }
+      const delta = pointerAngle(ev) - drag.angle;
+      // Shortest-path unwrap; per-event deltas are small.
+      t = drag.t + Math.atan2(Math.sin(delta), Math.cos(delta));
+      render();
+    });
+
+    function endDrag() {
+      if (drag?.active) {
+        suppressClick = true; // swallow the click that follows a real drag
+        setTimeout(() => (suppressClick = false), 0);
+      }
+      drag = null;
+      if (dragging) {
+        dragging = false;
+        svg.classList.remove('dragging');
+        updateRunning(); // release resumes the drift (unless otherwise paused)
+      }
+    }
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointercancel', endDrag);
+
+    // ---- drift pause listeners -------------------------------------------
+    root.addEventListener('pointerenter', (ev) => {
+      if (ev.pointerType === 'mouse') {
+        hoverPause = true;
+        updateRunning();
+      }
+    });
+    root.addEventListener('pointerleave', (ev) => {
+      if (ev.pointerType === 'mouse') {
+        hoverPause = false;
+        updateRunning();
+      }
+    });
+    root.addEventListener('focusin', () => {
+      focusPause = true;
+      updateRunning();
+    });
+    root.addEventListener('focusout', (ev) => {
+      if (!root.contains(ev.relatedTarget as Node | null)) {
+        focusPause = false;
+        updateRunning();
+      }
+    });
+    document.addEventListener('visibilitychange', updateRunning);
+    reduced.addEventListener('change', updateRunning);
+    new IntersectionObserver(
+      ([entry]) => {
+        offscreen = !entry.isIntersecting;
+        updateRunning();
+      },
+      { threshold: 0.01 },
+    ).observe(root);
+
+    render(); // normalize to the engine state (identical to the SSR frame)
+    updateRunning();
+  });
+</script>
