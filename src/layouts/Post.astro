@@ -1,0 +1,90 @@
+---
+/**
+ * Post — layout for writings entries (SPEC §7). Loads KaTeX CSS (only on
+ * post pages — the home diagram never pays for math fonts) and the prose
+ * stylesheet; renders the journal-style header: title, date, tags, lede.
+ */
+import 'katex/dist/katex.min.css';
+import '../styles/prose.css';
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  date: Date;
+  tags: string[];
+  summary: string;
+}
+
+const { title, date, tags, summary } = Astro.props;
+
+const longDate = date.toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const isoDate = date.toISOString().slice(0, 10);
+---
+
+<Base title={`${title} — Akram Zakine`} description={summary}>
+  <article class="post">
+    <header class="post-head">
+      <h1 class="post-title">{title}</h1>
+      <p class="post-meta">
+        <time datetime={isoDate}>{longDate}</time>
+        <span aria-hidden="true"> · </span>
+        {tags.join(' · ')}
+      </p>
+      <p class="post-lede">{summary}</p>
+    </header>
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <footer class="post-foot">
+      <hr />
+      <p>
+        <a href="/writings">← All writings</a>
+        <span aria-hidden="true"> · </span>
+        <a href="/rss.xml">RSS</a>
+      </p>
+    </footer>
+  </article>
+</Base>
+
+<style>
+  .post-head {
+    margin-bottom: 2.5rem;
+  }
+
+  .post-title {
+    margin-bottom: 0.75rem;
+  }
+
+  /* The label language of the site: small caps, letterspaced (as in the
+     detail panel and featured strip). */
+  .post-meta {
+    margin: 0 0 1rem;
+    color: var(--slate);
+    font-size: var(--text--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .post-lede {
+    margin: 0;
+    color: var(--slate);
+    font-size: var(--text-1);
+    line-height: 1.45;
+  }
+
+  .post-foot {
+    margin-top: 3rem;
+    font-size: var(--text--1);
+  }
+
+  .post-foot p {
+    margin: 0;
+  }
+</style>

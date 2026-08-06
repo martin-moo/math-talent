@@ -1,0 +1,26 @@
+---
+/**
+ * /writings/[slug] — one post. Drafts (§6.2) never get a route; the body is
+ * Markdown + LaTeX + fenced code, rendered through remark-math/rehype-katex
+ * and Shiki (wired in astro.config.mjs).
+ */
+import { getCollection, render } from 'astro:content';
+import Post from '../../layouts/Post.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('writings', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Post
+  title={post.data.title}
+  date={post.data.date}
+  tags={post.data.tags}
+  summary={post.data.summary}
+>
+  <Content />
+</Post>

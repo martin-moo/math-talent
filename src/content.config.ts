@@ -31,4 +31,32 @@ const achievements = defineCollection({
   }),
 });
 
-export const collections = { achievements };
+/**
+ * Writings — SPEC §6.2 verbatim. One Markdown file per post; the body may
+ * carry $…$ / $$…$$ LaTeX (remark-math + rehype-katex) and fenced code
+ * blocks (Shiki). Tags are the controlled vocabulary of SPEC §7 — the enum
+ * below is what makes it "controlled": anything else fails the build.
+ * `draft: true` posts build locally but are excluded from pages and RSS.
+ */
+export const POST_TAGS = [
+  'mathematics',
+  'problem-solving',
+  'competitions',
+  'computer-science',
+  'computer-vision',
+  'ai',
+  'notes',
+] as const;
+
+const writings = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/writings' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    tags: z.array(z.enum(POST_TAGS)),
+    summary: z.string(), // one sentence — shown in the dense index
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { achievements, writings };

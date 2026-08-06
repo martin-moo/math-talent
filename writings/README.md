@@ -1,11 +1,12 @@
-# writings/ — blog drafts live here (pre-scaffold)
+# writings/ — blog drafts live here (pre-publication)
 
-Write posts as Markdown files with frontmatter (schema: `SPEC.md` §6.2).
-At build **stage 5** these files move into `src/content/writings/` and become
-the blog. After launch, Akram writes and edits posts from `/admin`.
+Posts are drafted here as Markdown files with frontmatter (schema: `SPEC.md`
+§6.2), then move into `src/content/writings/` to become the blog. After
+launch, Akram writes and edits posts from `/admin`.
 
-- LaTeX everywhere: inline `$…$`, display `$$…$$`
+- LaTeX everywhere: inline `$…$`, display `$$…$$` on its own lines
+  (single-line `$$…$$` renders *inline* — remark-math quirk)
 - Code blocks: fenced, with language (```cpp)
-- Naming: `YYYY-MM-DD-slug.md`
-- `the-theorem-behind-this-site.md` is the seed post — it explains the math
-  that powers the home page. Akram can edit or replace it.
+- Tags: the controlled list in SPEC §7 (enforced by the collection schema)
+- `the-theorem-behind-this-site.md` shipped as post #1 (moved at stage 5) —
+  it explains the math that powers the home page. Akram can edit or replace it.

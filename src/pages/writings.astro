@@ -1,8 +1,130 @@
 ---
+/**
+ * /writings — the dense index (SPEC §7): date, title, tags, one-line
+ * summary; newest first; no images. Structure is a hairline-ruled list,
+ * whitespace does the work (§3.4). Drafts are filtered at the collection
+ * query, so a `draft: true` file never reaches the page.
+ */
+import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+
+const posts = (await getCollection('writings', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const iso = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
-<Base title="Writings — Akram Zakine">
-  <h1>Writings</h1>
-  <p>Posts will appear here.</p>
+<Base title="Writings — Akram Zakine" description="Posts by Akram Zakine — mathematics, problem-solving, competitions, computing.">
+  <header class="index-head">
+    <h1>Writings</h1>
+    <p class="index-sub">
+      Notes on mathematics, problem-solving, and computing.
+      <a href="/rss.xml" class="rss-link">RSS</a>
+    </p>
+  </header>
+
+  <ol class="post-index">
+    {
+      posts.map((post) => (
+        <li class="post-row">
+          <time class="p-date" datetime={iso(post.data.date)}>
+            {iso(post.data.date)}
+          </time>
+          <div class="p-main">
+            <a class="p-title" href={`/writings/${post.id}/`}>
+              {post.data.title}
+            </a>
+            <p class="p-summary">{post.data.summary}</p>
+            <p class="p-tags">{post.data.tags.join(' · ')}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
 </Base>
+
+<style>
+  .index-head {
+    margin-bottom: 2rem;
+  }
+
+  .index-head h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .index-sub {
+    margin: 0;
+    color: var(--slate);
+  }
+
+  .rss-link {
+    margin-left: 0.5em;
+    font-size: var(--text--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* The dense list: one hairline-ruled row per post, date in the margin. */
+  .post-index {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post-row {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 1.25rem;
+    padding-block: 1.1rem;
+  }
+
+  .post-row + .post-row {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .p-date {
+    padding-top: 0.3em; /* optically aligns with the title cap height */
+    color: var(--slate);
+    font-family: var(--font-code);
+    font-size: var(--text--1);
+  }
+
+  .p-title {
+    font-family: var(--font-display);
+    font-size: var(--text-1);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .p-title:hover,
+  .p-title:focus-visible {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+  }
+
+  .p-summary {
+    margin: 0.15rem 0 0.3rem;
+  }
+
+  .p-tags {
+    margin: 0;
+    color: var(--slate);
+    font-size: var(--text--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Small screens: the date drops above the entry, the list stays dense. */
+  @media (max-width: 560px) {
+    .post-row {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+      padding-block: 0.9rem;
+    }
+
+    .p-date {
+      padding-top: 0;
+    }
+  }
+</style>
