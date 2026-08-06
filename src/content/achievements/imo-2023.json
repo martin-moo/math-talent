@@ -1,0 +1,22 @@
+{
+  "id": "imo-2023",
+  "title": "Honorable Mention — IMO 2023",
+  "competition": "International Mathematical Olympiad",
+  "shortName": "IMO",
+  "date": "2023-07",
+  "location": "Chiba, Japan",
+  "team": "Belgium",
+  "award": "Honorable Mention",
+  "score": "9/42",
+  "rank": null,
+  "description": "First IMO participation; Honorable Mention at the 64th IMO in Japan.",
+  "logo": "media/logos/imo.svg",
+  "images": [],
+  "links": [
+    {
+      "label": "Official IMO record",
+      "url": "https://www.imo-official.org/participant_r.aspx?id=33682"
+    }
+  ],
+  "featured": false
+}

@@ -1,0 +1,22 @@
+{
+  "id": "ioi-2024",
+  "title": "Contestant — IOI 2024",
+  "competition": "International Olympiad in Informatics",
+  "shortName": "IOI",
+  "date": "2024-09",
+  "location": "Alexandria, Egypt",
+  "team": "Belgium",
+  "award": "Contestant (qualified via BeCP)",
+  "score": "110.85",
+  "rank": "288th of 353",
+  "description": "Represented Belgium at the 36th IOI, competing across six algorithmic tasks over two contest days.",
+  "logo": "media/logos/ioi.png",
+  "images": [],
+  "links": [
+    {
+      "label": "Official IOI statistics",
+      "url": "https://stats.ioinformatics.org/people/8256"
+    }
+  ],
+  "featured": true
+}

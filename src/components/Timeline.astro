@@ -1,0 +1,150 @@
+---
+/**
+ * Timeline — second rendering of the same achievements data (SPEC §5.5).
+ * Vertical, medmdg-inspired: year spine, logo chips, award lines, scores,
+ * NEWEST FIRST. Status: experiment — it must earn its place against the
+ * Porism view before launch.
+ */
+import LogoChip from './LogoChip.astro';
+import { yearOf, type Achievement } from '../lib/achievements';
+
+interface Props {
+  entries: Achievement[]; // chronological ascending
+}
+
+const { entries } = Astro.props;
+const newestFirst = [...entries].reverse();
+
+// Group consecutive same-year entries under one spine marker.
+const groups: { year: string; items: Achievement[] }[] = [];
+for (const e of newestFirst) {
+  const y = yearOf(e);
+  const last = groups[groups.length - 1];
+  if (last && last.year === y) last.items.push(e);
+  else groups.push({ year: y, items: [e] });
+}
+
+/** Meta line: competition · team · location · score · rank — present parts only. */
+const metaParts = (e: Achievement) =>
+  [
+    e.competition,
+    e.team ? `Team: ${e.team}` : null,
+    e.location,
+    e.score ? `Score ${e.score}` : null,
+    e.rank,
+  ].filter(Boolean);
+---
+
+<ol class="timeline">
+  {
+    groups.map((g) => (
+      <li class="t-group">
+        <span class="t-year">{g.year}</span>
+        <ol class="t-entries">
+          {g.items.map((e) => (
+            <li class="t-entry" data-id={e.id}>
+              <LogoChip logo={e.logo} shortName={e.shortName} />
+              <div class="t-main">
+                <p class="t-award">
+                  {e.award} <span class="t-short">· {e.shortName}</span>
+                </p>
+                <p class="t-meta">{metaParts(e).join(' · ')}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .timeline {
+    max-width: var(--measure);
+    margin: 2rem auto 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .t-group {
+    display: grid;
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .t-group + .t-group {
+    margin-top: 1.75rem;
+  }
+
+  .t-year {
+    font-family: var(--font-display);
+    font-size: var(--text-1);
+    font-weight: 600;
+    text-align: right;
+    line-height: 1.9; /* aligns optically with the first entry row */
+  }
+
+  /* The spine: a hairline rail with a gold dot per entry — gold marks
+     awards here, never decoration (§3.1). */
+  .t-entries {
+    margin: 0;
+    padding: 0 0 0 1.25rem;
+    list-style: none;
+    border-left: 1px solid var(--hairline);
+  }
+
+  .t-entry {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding-block: 0.45rem;
+  }
+
+  .t-entry + .t-entry {
+    margin-top: 0.55rem;
+  }
+
+  .t-entry::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.25rem - 4.5px);
+    top: 1.05rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .t-award {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .t-short {
+    font-weight: 400;
+    color: var(--slate);
+  }
+
+  .t-meta {
+    margin: 0.1rem 0 0;
+    font-size: var(--text--1);
+    color: var(--slate);
+  }
+
+  @media (max-width: 639px) {
+    .t-group {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.25rem;
+    }
+
+    .t-year {
+      text-align: left;
+      line-height: 1.2;
+    }
+
+    .timeline {
+      margin-top: 1.25rem;
+    }
+  }
+</style>

@@ -1,73 +1,47 @@
 ---
 import Base from '../layouts/Base.astro';
-import Poncelet, { type PonceletEntry } from '../components/Poncelet.astro';
+import AchievementsView from '../components/AchievementsView.astro';
+import FeaturedStrip from '../components/FeaturedStrip.astro';
+import { getAchievements, featuredOf } from '../lib/achievements';
+import { profile } from '../lib/profile';
 
-// Stage-3 demo data: the 8 most recent achievements, fields copied verbatim
-// from achievements_data/achievements.json (chronological ascending, as in
-// the data file — the renderer reads from the end, SPEC §5.1). Stage 4
-// replaces this with the real content collection.
-const demoEntries: PonceletEntry[] = [
-  {
-    id: 'omb-2024',
-    title: 'First Place — OMB 2024',
-    shortName: 'OMB',
-    date: '2024-05',
-    award: 'First Place (MAXI category)',
-  },
-  {
-    id: 'bmo-2024',
-    title: 'Silver Medal — BMO 2024',
-    shortName: 'BMO',
-    date: '2024-05',
-    award: 'Silver Medal',
-  },
-  {
-    id: 'becp-2024',
-    title: '4th Place & IOI Qualification — BeCP 2024',
-    shortName: 'BeCP',
-    date: '2024-05',
-    award: '4th nationally (C++) — qualified for IOI 2024',
-  },
-  {
-    id: 'imo-2024',
-    title: 'Silver Medal — IMO 2024',
-    shortName: 'IMO',
-    date: '2024-07',
-    award: 'Silver Medal',
-  },
-  {
-    id: 'ioi-2024',
-    title: 'Contestant — IOI 2024',
-    shortName: 'IOI',
-    date: '2024-09',
-    award: 'Contestant (qualified via BeCP)',
-  },
-  {
-    id: 'mmc-2025',
-    title: 'First Place — MMC 2025',
-    shortName: 'MMC',
-    date: '2025-06',
-    award: 'First Place',
-  },
-  {
-    id: 'mmc-2026',
-    title: 'First Place — MMC 2026',
-    shortName: 'MMC',
-    date: '2026-06',
-    award: 'First Place',
-  },
-  {
-    id: 'imc-2026',
-    title: '3rd Worldwide — IMC 2026',
-    shortName: 'IMC',
-    date: '2026-08',
-    award: 'Gold Medal & Grand First Prize',
-  },
-];
+// Stage 4: real data from the content collection (SPEC §6.1). Chronological
+// ascending; the renderer reads from the end — latest at the top vertex (§5.1).
+const entries = await getAchievements();
+const featured = featuredOf(entries);
 ---
 
-<Base title="Akram Zakine — Mathematics">
-  <h1>Akram Zakine</h1>
-  <p>Mathematical portfolio — under construction.</p>
-  <Poncelet entries={demoEntries} />
+<Base title="Akram Zakine — Mathematics" description={profile.tagline}>
+  {/* Apply the persisted Porism/Timeline preference before first paint so
+      the wrong view never flashes (SPEC §5.5). Unpersisted default: Porism;
+      on phones the Timeline leads. */}
+  <script is:inline slot="head">
+    (function () {
+      var view = 'porism';
+      try {
+        var stored = localStorage.getItem('az:view');
+        if (stored === 'porism' || stored === 'timeline') view = stored;
+        else if (matchMedia('(max-width: 639px)').matches) view = 'timeline';
+      } catch (e) {}
+      document.documentElement.dataset.achView = view;
+    })();
+  </script>
+
+  <h1>{profile.name}</h1>
+  <p class="tagline">{profile.tagline}</p>
+
+  <div class="wide">
+    <AchievementsView entries={entries} bio={{ name: profile.name, text: profile.bioShort }} />
+  </div>
+
+  <FeaturedStrip entries={featured} />
 </Base>
+
+<style>
+  .tagline {
+    margin: 0;
+    color: var(--slate);
+    font-size: var(--text-1);
+    line-height: 1.4;
+  }
+</style>

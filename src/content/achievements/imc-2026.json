@@ -1,0 +1,26 @@
+{
+  "id": "imc-2026",
+  "title": "3rd Worldwide — IMC 2026",
+  "competition": "International Mathematics Competition for University Students",
+  "shortName": "IMC",
+  "date": "2026-08",
+  "location": "Blagoevgrad, Bulgaria",
+  "team": "Math&Maroc",
+  "award": "Gold Medal & Grand First Prize",
+  "score": null,
+  "rank": "3rd worldwide",
+  "description": "Third place on the planet at IMC 2026, awarded a Gold Medal and Grand First Prize while competing for the Math&Maroc team — the achievement this site celebrates.",
+  "logo": "media/logos/imc.jpg",
+  "images": [
+    "media/achievements/imc-2026/img1.jpeg",
+    "media/achievements/imc-2026/imc2.png",
+    "media/achievements/imc-2026/imc3.png"
+  ],
+  "links": [
+    {
+      "label": "Medias24 coverage",
+      "url": "https://medias24.com/2026/08/03/mathematiques-un-marocain-decroche-la-3e-place-mondiale-a-limc-1735705/"
+    }
+  ],
+  "featured": true
+}

@@ -1,0 +1,22 @@
+{
+  "id": "imo-2024",
+  "title": "Silver Medal — IMO 2024",
+  "competition": "International Mathematical Olympiad",
+  "shortName": "IMO",
+  "date": "2024-07",
+  "location": "Bath, United Kingdom",
+  "team": "Belgium",
+  "award": "Silver Medal",
+  "score": "22/42",
+  "rank": "147th worldwide",
+  "description": "Silver medal at the 65th IMO with 22 points (7, 7, 0, 7, 1, 0) — on the medal boundary — one year after his Honorable Mention.",
+  "logo": "media/logos/imo.svg",
+  "images": [],
+  "links": [
+    {
+      "label": "Official IMO record",
+      "url": "https://www.imo-official.org/participant_r.aspx?id=33682"
+    }
+  ],
+  "featured": true
+}

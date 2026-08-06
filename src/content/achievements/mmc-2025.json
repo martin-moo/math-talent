@@ -1,0 +1,20 @@
+{
+  "id": "mmc-2025",
+  "title": "First Place — MMC 2025",
+  "competition": "Moroccan Mathematics Competition (Math&Maroc)",
+  "shortName": "MMC",
+  "date": "2025-06",
+  "location": "Morocco",
+  "team": null,
+  "award": "First Place",
+  "score": null,
+  "rank": "1st",
+  "description": "National champion of the Moroccan undergraduate mathematics contest — the first of two consecutive titles.",
+  "logo": "media/logos/mathmaroc.webp",
+  "images": [
+    "media/achievements/mmc-2025/mmc1.png",
+    "media/achievements/mmc-2025/mmc2.png"
+  ],
+  "links": [],
+  "featured": false
+}

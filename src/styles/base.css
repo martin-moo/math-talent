@@ -77,6 +77,15 @@ hr {
   padding-inline: 1.25rem;
 }
 
+/* §3.4 — the diagram section may go wider than the text measure. A direct
+   child of .wrap with .wide breaks out symmetrically, up to --wide-max. */
+.wide {
+  --wide-max: 76rem;
+  width: min(var(--wide-max), 100vw - 2.5rem);
+  max-width: none;
+  margin-inline: calc((100% - min(var(--wide-max), 100vw - 2.5rem)) / 2);
+}
+
 .site-header {
   border-bottom: 1px solid var(--hairline);
 }

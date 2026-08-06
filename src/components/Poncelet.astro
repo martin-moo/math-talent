@@ -17,20 +17,15 @@
  * renderer negates y, which maps math-CCW to visual-CCW.
  */
 import { solveInnerScale, vertices, type Vec2 } from '../lib/poncelet/engine';
-
-export interface PonceletEntry {
-  id: string;
-  title: string;
-  shortName: string;
-  date: string; // ISO month "YYYY-MM"
-  award: string;
-}
+import type { Achievement } from '../lib/achievements';
 
 interface Props {
-  entries: PonceletEntry[];
+  entries: Achievement[];
+  /** Bio core inside the inner ellipse (SPEC §5.3): name + bioShort (§6.3). */
+  bio: { name: string; text: string };
 }
 
-const { entries } = Astro.props;
+const { entries, bio } = Astro.props;
 const n = entries.length; // engine throws at build time if n < 3
 
 // --- geometry constants -------------------------------------------------
@@ -69,8 +64,8 @@ const TAG_DY = -15; // "Latest" tag stacked directly above the year label
 // Vertex k carries entries[n−1−k]: latest at vertex 0, then backward in
 // time in the positive (counterclockwise) direction (SPEC §5.1).
 const atVertex = (k: number) => entries[n - 1 - k];
-const year = (e: PonceletEntry) => e.date.slice(0, 4);
-const ariaLabel = (e: PonceletEntry) => `${e.award}, ${e.shortName} ${year(e)}`;
+const year = (e: Achievement) => e.date.slice(0, 4);
+const ariaLabel = (e: Achievement) => `${e.award}, ${e.shortName} ${year(e)}`;
 
 const DEFAULT_SELECTED = 0; // IMC 2026 — featured by default on load (§5.4)
 
@@ -84,6 +79,20 @@ const arcPt = (deg: number) => {
 };
 const arcFrom = arcPt(62);
 const arcTo = arcPt(118);
+
+// Bio overlay geometry (§5.3): an HTML layer elliptically clipped to the
+// inner ellipse. The figure is an inline-size container and the SVG fills
+// its width, so viewBox fractions map to cqw units exactly: x% of the
+// viewBox width = x·100 cqw, and y fractions likewise (svg height =
+// H/W · 100 cqw). No wrapper element needed; the figcaption stays clear.
+const cqw = (fraction: number) => `${Number((fraction * 100).toFixed(4))}cqw`;
+const overlayStyle = [
+  `--ox: ${cqw(CX / W)}`,
+  `--oy: ${cqw(CY / W)}`,
+  `--orx: ${cqw((s * A) / W)}`,
+  `--ory: ${cqw((s * B) / W)}`,
+  `--oh: ${cqw(H / W)}`,
+].join(';');
 ---
 
 <figure class="poncelet" data-cx={CX} data-cy={CY} data-a={A} data-b={B} data-s={s} data-t0={T0}>
@@ -152,6 +161,7 @@ const arcTo = arcPt(118);
             aria-label={ariaLabel(e)}
             aria-pressed={k === DEFAULT_SELECTED ? 'true' : 'false'}
             data-index={k}
+            data-id={e.id}
             data-title={e.title}
             transform={`translate(${f(SX(v))} ${f(SY(v))})`}
           >
@@ -174,6 +184,17 @@ const arcTo = arcPt(118);
       })
     }
   </svg>
+
+  {/* Bio core (§4, §5.3): HTML overlay elliptically clipped to the inner
+      ellipse. Below 640px it un-clips and flows under the diagram as plain
+      text (§5.5: honesty about what phones can show). */}
+  <div class="bio-overlay" style={overlayStyle}>
+    <div class="bio-inner">
+      <p class="bio-name">{bio.name}</p>
+      <p class="bio-text">{bio.text}</p>
+    </div>
+  </div>
+
   <figcaption class="poncelet-status" aria-live="polite">
     {atVertex(DEFAULT_SELECTED).title}
   </figcaption>
@@ -193,6 +214,72 @@ const arcTo = arcPt(118);
     /* The diagram section may go wider than the text measure (§3.4). */
     max-width: 60rem;
     margin: 2.5rem auto 0;
+    /* Positioning context + cqw source for the bio overlay (see frontmatter). */
+    position: relative;
+    container-type: inline-size;
+  }
+
+  .bio-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--oh); /* exactly the SVG box; the figcaption stays clear */
+    clip-path: ellipse(var(--orx) var(--ory) at var(--ox) var(--oy));
+    pointer-events: none; /* the polygon edges beneath stay draggable */
+  }
+
+  .bio-inner {
+    position: absolute;
+    left: var(--ox);
+    top: var(--oy);
+    transform: translate(-50%, -50%);
+    /* ~⅔ of the ellipse width: safely inside the inscribed rectangle. */
+    width: calc(var(--orx) * 1.32);
+    text-align: center;
+  }
+
+  .bio-name {
+    margin: 0 0 0.4em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2.6cqw;
+    line-height: 1.15;
+  }
+
+  .bio-text {
+    margin: 0;
+    font-size: 1.55cqw;
+    line-height: 1.45;
+    color: var(--slate);
+  }
+
+  /* §5.5 — phones: static diagram, and the bio un-clips into plain text
+     under it (the inner ellipse is too small to read at that width). */
+  @media (max-width: 639px) {
+    .bio-overlay {
+      position: static;
+      height: auto;
+      clip-path: none;
+      pointer-events: auto;
+      margin-top: 1.25rem;
+    }
+
+    .bio-inner {
+      position: static;
+      transform: none;
+      width: auto;
+      max-width: var(--measure);
+      margin-inline: auto;
+    }
+
+    .bio-name {
+      font-size: var(--text-1);
+    }
+
+    .bio-text {
+      font-size: var(--text-0);
+    }
   }
 
   .poncelet svg {
@@ -388,6 +475,8 @@ const arcTo = arcPt(118);
     let dragging = false;
     let offscreen = false;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    // §5.5: on small screens the diagram is a static, tappable render.
+    const smallScreen = matchMedia('(max-width: 639px)');
 
     let raf = 0;
     let last: number | null = null;
@@ -399,7 +488,8 @@ const arcTo = arcPt(118);
       focusPause ||
       offscreen ||
       document.hidden ||
-      reduced.matches;
+      reduced.matches ||
+      smallScreen.matches;
 
     function tick(now: number) {
       if (last !== null) {
@@ -459,7 +549,9 @@ const arcTo = arcPt(118);
       }
     }
 
-    // ---- selection (click / Enter); the detail panel arrives in stage 4 --
+    // ---- selection (click / Enter); the detail panel (stage 4) follows via
+    // the `poncelet:select` event, and external UI (featured strip) can ask
+    // for a selection with `ach:select` -------------------------------
     function select(k: number) {
       if (k === selected) return;
       groups[selected].classList.remove('selected');
@@ -472,7 +564,19 @@ const arcTo = arcPt(118);
       edges[selected].classList.add('selected');
       edges[(selected + n - 1) % n].classList.add('selected');
       if (status) status.textContent = groups[selected].dataset.title ?? '';
+      root.dispatchEvent(
+        new CustomEvent('poncelet:select', {
+          bubbles: true,
+          detail: { id: groups[selected].dataset.id },
+        }),
+      );
     }
+
+    window.addEventListener('ach:select', (ev) => {
+      const id = (ev as CustomEvent).detail?.id;
+      const k = groups.findIndex((g) => g.dataset.id === id);
+      if (k >= 0) select(k);
+    });
 
     // ---- roving focus: ←/→ cycles vertices (SPEC §5.4) -------------------
     function moveFocus(to: number) {
@@ -573,6 +677,7 @@ const arcTo = arcPt(118);
     });
     document.addEventListener('visibilitychange', updateRunning);
     reduced.addEventListener('change', updateRunning);
+    smallScreen.addEventListener('change', updateRunning);
     new IntersectionObserver(
       ([entry]) => {
         offscreen = !entry.isIntersecting;

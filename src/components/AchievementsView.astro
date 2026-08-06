@@ -1,0 +1,199 @@
+---
+/**
+ * AchievementsView — one dataset, two renderings (SPEC §5.5).
+ *
+ * Porism view (default): the diagram + detail panel side by side.
+ * Timeline view: the experimental vertical list (must earn its place).
+ *
+ * The toggle persists in localStorage ("az:view"); an inline head script on
+ * the page sets `data-ach-view` on <html> before first paint, so there is
+ * no flash of the wrong view. On screens < 640px the unpersisted default is
+ * the Timeline — the chronological list leads and the diagram is a static
+ * tappable render (§5.5). Without JS the toggle stays hidden and the Porism
+ * view (plus the screen-reader list) is what everyone gets.
+ */
+import Poncelet from './Poncelet.astro';
+import AchievementDetail from './AchievementDetail.astro';
+import Timeline from './Timeline.astro';
+import type { Achievement } from '../lib/achievements';
+
+interface Props {
+  entries: Achievement[]; // chronological ascending
+  bio: { name: string; text: string };
+}
+
+const { entries, bio } = Astro.props;
+---
+
+<section class="achview" aria-labelledby="achievements-heading">
+  <div class="achview-bar">
+    <h2 id="achievements-heading">Achievements</h2>
+    <div class="achview-toggle" role="group" aria-label="Achievements view" hidden>
+      <button type="button" data-view-btn="porism" aria-pressed="true">Porism</button>
+      <button type="button" data-view-btn="timeline" aria-pressed="false">Timeline</button>
+    </div>
+  </div>
+
+  <div class="achview-porism">
+    <div class="porism-grid">
+      <Poncelet entries={entries} bio={bio} />
+      <AchievementDetail entries={entries} />
+    </div>
+  </div>
+
+  <div class="achview-timeline">
+    <Timeline entries={entries} />
+  </div>
+</section>
+
+{/* View switching is global state (set before paint by the page's inline
+    head script), so these rules must be global too. Default = Porism. */}
+<style is:global>
+  .achview-timeline {
+    display: none;
+  }
+
+  html[data-ach-view='timeline'] .achview-timeline {
+    display: block;
+  }
+
+  html[data-ach-view='timeline'] .achview-porism {
+    display: none;
+  }
+</style>
+
+<style>
+  .achview {
+    margin-top: 3rem;
+  }
+
+  .achview-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .achview-bar h2 {
+    margin: 0;
+  }
+
+  .achview-toggle {
+    display: inline-flex;
+    gap: 0;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .achview-toggle[hidden] {
+    display: none;
+  }
+
+  .achview-toggle button {
+    padding: 0.3rem 0.9rem;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: var(--text--1);
+    color: var(--slate);
+    cursor: pointer;
+    transition:
+      color 150ms ease,
+      background-color 150ms ease;
+  }
+
+  .achview-toggle button + button {
+    border-left: 1px solid var(--hairline);
+  }
+
+  .achview-toggle button:hover {
+    color: var(--ink);
+  }
+
+  /* The active view gets the gold underline — state, not decoration. */
+  .achview-toggle button[aria-pressed='true'] {
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+
+  /* Diagram + detail panel side by side (§5.4); stacked on narrow screens. */
+  .porism-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 17rem);
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .porism-grid :global(.poncelet) {
+    margin: 0;
+    max-width: none;
+  }
+
+  .porism-grid :global(.detail) {
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 62rem) {
+    .porism-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .porism-grid :global(.detail) {
+      margin-top: 0;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * View toggle + panel wiring. `data-ach-view` on <html> is the single
+   * source of truth (initialized pre-paint by the page's inline script);
+   * this script owns updates and persistence.
+   */
+  const STORAGE_KEY = 'az:view';
+
+  document.querySelectorAll<HTMLElement>('section.achview').forEach((root) => {
+    const toggle = root.querySelector<HTMLElement>('.achview-toggle')!;
+    const buttons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[data-view-btn]'),
+    );
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-panel]'));
+
+    function currentView(): string {
+      return document.documentElement.dataset.achView === 'timeline' ? 'timeline' : 'porism';
+    }
+
+    function applyView(view: string, persist: boolean) {
+      document.documentElement.dataset.achView = view;
+      for (const b of buttons) {
+        b.setAttribute('aria-pressed', String(b.dataset.viewBtn === view));
+      }
+      if (persist) {
+        try {
+          localStorage.setItem(STORAGE_KEY, view);
+        } catch {
+          /* private mode etc. — the toggle still works for the session */
+        }
+      }
+    }
+
+    toggle.hidden = false; // JS is available → the toggle earns its place
+    applyView(currentView(), false);
+
+    for (const b of buttons) {
+      b.addEventListener('click', () => applyView(b.dataset.viewBtn!, true));
+    }
+
+    // Diagram selection → swap the detail panel (SPEC §5.4).
+    root.addEventListener('poncelet:select', (ev) => {
+      const id = (ev as CustomEvent).detail?.id;
+      for (const p of panels) p.hidden = p.dataset.panel !== id;
+    });
+
+    // Featured strip (or any external UI) → show the Porism view; the
+    // Poncelet island listens for the same event and selects the vertex.
+    window.addEventListener('ach:select', () => applyView('porism', false));
+  });
+</script>

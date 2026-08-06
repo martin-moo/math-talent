@@ -1,0 +1,22 @@
+{
+  "id": "becp-2024",
+  "title": "4th Place & IOI Qualification — BeCP 2024",
+  "competition": "Belgian Competitive Programming Contest",
+  "shortName": "BeCP",
+  "date": "2024-05",
+  "location": "Belgium",
+  "team": null,
+  "award": "4th nationally (C++) — qualified for IOI 2024",
+  "score": null,
+  "rank": "4th",
+  "description": "Best national ranking (7th → 5th → 4th over three years), earning selection for the International Olympiad in Informatics.",
+  "logo": "media/logos/becp.png",
+  "images": [],
+  "links": [
+    {
+      "label": "beOI/beCP 2024 results",
+      "url": "https://beoi.be-oi.be/nl/beoi24/"
+    }
+  ],
+  "featured": false
+}

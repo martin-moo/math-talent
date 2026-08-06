@@ -36,6 +36,7 @@ const isCurrent = (href: string) =>
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <slot name="head" />
   </head>
   <body>
     <header class="site-header">

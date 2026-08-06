@@ -1,0 +1,27 @@
+{
+  "id": "bmo-2024",
+  "title": "Silver Medal — BMO 2024",
+  "competition": "Balkan Mathematical Olympiad",
+  "shortName": "BMO",
+  "date": "2024-05",
+  "location": "Varna, Bulgaria",
+  "team": "France (guest team)",
+  "award": "Silver Medal",
+  "score": null,
+  "rank": "15th of 124",
+  "description": "Silver medal at the 41st Balkan Mathematical Olympiad, competing with the French guest team; France finished 4th of 23 teams.",
+  "logo": null,
+  "images": [
+    "media/achievements/bmo-2024/IMG_1562-768x576.jpg",
+    "media/achievements/bmo-2024/IMG_1555-768x576.jpg",
+    "media/achievements/bmo-2024/IMG_1598-768x1024.jpg",
+    "media/achievements/bmo-2024/WhatsApp-Image-2024-05-02-at-14.12.03-768x432.jpeg"
+  ],
+  "links": [
+    {
+      "label": "French team report (maths-olympiques.fr)",
+      "url": "https://maths-olympiques.fr/?p=13964"
+    }
+  ],
+  "featured": false
+}

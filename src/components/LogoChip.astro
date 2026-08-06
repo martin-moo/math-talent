@@ -1,0 +1,45 @@
+---
+/**
+ * LogoChip — the competition logo, or the typographic shortName chip when
+ * no official image logo exists (SPEC §6.1: BMO, BxMO, OFM have none).
+ * Always decorative: adjacent text already names the competition.
+ */
+interface Props {
+  logo: string | null;
+  shortName: string;
+}
+
+const { logo, shortName } = Astro.props;
+---
+
+{
+  logo ? (
+    <img class="logo-chip" src={`/${logo}`} alt="" loading="lazy" decoding="async" />
+  ) : (
+    <span class="logo-chip text" aria-hidden="true">
+      {shortName}
+    </span>
+  )
+}
+
+<style>
+  .logo-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: none;
+    object-fit: contain;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    background: var(--paper);
+  }
+
+  .logo-chip.text {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--slate);
+  }
+</style>

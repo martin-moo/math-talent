@@ -1,0 +1,22 @@
+{
+  "id": "becp-2023",
+  "title": "5th Place — BeCP 2023",
+  "competition": "Belgian Competitive Programming Contest",
+  "shortName": "BeCP",
+  "date": "2023-05",
+  "location": "Belgium",
+  "team": null,
+  "award": "5th nationally (C++)",
+  "score": null,
+  "rank": "5th",
+  "description": "Improved national ranking in competitive programming.",
+  "logo": "media/logos/becp.png",
+  "images": [],
+  "links": [
+    {
+      "label": "beOI/beCP 2023 results",
+      "url": "https://beoi.be-oi.be/fr/beoi23/"
+    }
+  ],
+  "featured": false
+}
