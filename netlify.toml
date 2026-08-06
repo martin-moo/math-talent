@@ -1,0 +1,11 @@
+# Netlify configuration — Akram Zakine · Mathematical Portfolio
+# Stage 0 placeholder. Only static build settings for now;
+# Forms / Identity get wired in stages 6–7 (see drafts/BUILD_GUIDE.md).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # SPEC §12: Node >= 20
+  NODE_VERSION = "20"

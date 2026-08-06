@@ -1,0 +1,16 @@
+{
+  "_comment": "Profile seed — shown inside the inner ellipse (bioShort) and on the home page. Akram can edit everything from /admin later.",
+  "name": "Akram Zakine",
+  "tagline": "Mathematician · IMC 2026 world #3 · IMO 2024 silver medalist",
+  "bioShort": "Mathematics student at the École Normale Supérieure (PSL, Paris). Problem solver — olympiads, algorithms, and the geometry in between.",
+  "bioLong": "Akram Zakine studies mathematics at the École Normale Supérieure (PSL), Paris, after two years of classes préparatoires at Lycée Louis-le-Grand and his secondary education at Athénée Robert Catteau in Brussels. He placed 3rd worldwide at the 2026 International Mathematics Competition (Math&Maroc team), is a two-time Moroccan national champion (MMC 2025, 2026), a two-time Belgian national champion (OMB 2023, 2024), an IMO 2024 silver medalist, and represented Belgium at IOI 2024. Beyond competitions he is drawn to computer science — algorithms, computer vision, and AI — wherever it meets mathematics.",
+  "photo": "media/profile/portrait.jpg",
+  "email": "akramzakine2@gmail.com",
+  "linkedin": "https://www.linkedin.com/in/akram-zakine/",
+  "education": [
+    { "school": "École Normale Supérieure — PSL, Paris", "program": "Mathematics (Master's)", "period": "2026 – 2030" },
+    { "school": "Lycée Louis-le-Grand, Paris", "program": "Classes préparatoires", "period": "2024 – 2026" },
+    { "school": "Athénée Robert Catteau, Brussels", "program": "Secondary education", "period": "2018 – 2024" }
+  ],
+  "interests": ["Mathematics", "Problem solving", "Competitive programming (C++)", "Computer vision", "AI & data science"]
+}
