@@ -1,0 +1,175 @@
+# Decap CMS config — Akram Zakine · Mathematical Portfolio
+# SPEC §8: Git-based admin at /admin, Netlify Identity + Git Gateway.
+# Collections mirror SPEC §6 exactly. Media uploads land in public/media/.
+
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: public/media
+# SPEC §6 paths are root-relative without a leading slash (media/logos/imo.svg)
+# and components prepend "/" at render time — so public_folder must be "media".
+public_folder: media
+
+site_url: https://math-talent.netlify.app
+
+collections:
+  # SPEC §6.1 — Achievements (one JSON per entry, filename = id)
+  - name: achievements
+    label: Achievements
+    label_singular: Achievement
+    folder: src/content/achievements
+    extension: json
+    create: true
+    delete: true
+    identifier_field: id
+    summary: "{{date}} · {{shortName}} — {{award}}"
+    fields:
+      - label: ID (slug — must equal the filename)
+        name: id
+        widget: string
+        hint: URL-safe and stable, e.g. mmc-2027. The file is saved as <id>.json.
+      - label: Title
+        name: title
+        widget: string
+      - label: Competition
+        name: competition
+        widget: string
+      - label: Short name
+        name: shortName
+        widget: string
+        hint: Vertex label renders as "YYYY · <shortName>", e.g. IMO.
+      - label: Date (month)
+        name: date
+        widget: string
+        pattern: ['^\d{4}-\d{2}$', 'Must be YYYY-MM']
+        hint: ISO month, e.g. 2027-03. New entries are appended to the end of the timeline.
+      - label: Location
+        name: location
+        widget: string
+        required: false
+      - label: Team
+        name: team
+        widget: string
+        required: false
+      - label: Award
+        name: award
+        widget: string
+      - label: Score
+        name: score
+        widget: string
+        required: false
+        hint: Never invent — leave empty if unknown.
+      - label: Rank
+        name: rank
+        widget: string
+        required: false
+      - label: Description
+        name: description
+        widget: text
+      - label: Logo
+        name: logo
+        widget: image
+        required: false
+        hint: Official logo file; leave empty for the typographic shortName chip (BMO, BxMO, OFM).
+      - label: Images
+        name: images
+        widget: list
+        required: false
+        default: []
+        collapsed: true
+        field:
+          label: Image
+          name: image
+          widget: image
+      - label: Links
+        name: links
+        widget: list
+        required: false
+        default: []
+        collapsed: true
+        fields:
+          - { label: Label, name: label, widget: string }
+          - { label: URL, name: url, widget: string }
+      - label: Featured
+        name: featured
+        widget: boolean
+        default: false
+        hint: 3–5 max — drives the home strip.
+
+  # SPEC §6.2 / §7 — Writings (Markdown; LaTeX + code blocks pass through)
+  - name: writings
+    label: Writings
+    label_singular: Post
+    folder: src/content/writings
+    extension: md
+    create: true
+    delete: true
+    summary: "{{title}} — {{date}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Date, name: date, widget: datetime, format: yyyy-MM-dd }
+      - label: Tags
+        name: tags
+        widget: select
+        multiple: true
+        options:
+          - mathematics
+          - problem-solving
+          - competitions
+          - computer-science
+          - computer-vision
+          - ai
+          - notes
+      - { label: Summary, name: summary, widget: text }
+      - { label: Draft, name: draft, widget: boolean, default: false }
+      - { label: Body, name: body, widget: markdown }
+
+  # SPEC §6.3 — Profile (single record)
+  - name: profile
+    label: Profile
+    files:
+      - name: profile
+        label: Profile
+        file: src/content/profile.json
+        extension: json
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: Tagline, name: tagline, widget: string }
+          - label: Bio (short)
+            name: bioShort
+            widget: text
+            hint: ≤ 240 characters — shown inside the inner ellipse.
+          - { label: Bio (long), name: bioLong, widget: text }
+          - { label: Photo, name: photo, widget: image }
+          - { label: Email, name: email, widget: string }
+          - { label: LinkedIn, name: linkedin, widget: string }
+          - label: Education
+            name: education
+            widget: list
+            collapsed: true
+            fields:
+              - { label: School, name: school, widget: string }
+              - { label: Program, name: program, widget: string }
+              - { label: Period, name: period, widget: string }
+          - label: Interests
+            name: interests
+            widget: list
+            collapsed: true
+            field:
+              label: Interest
+              name: interest
+              widget: string
+
+  # SPEC §4 / §6.4 — Quotes: present but hidden until ≥ 2 exist (enable later)
+  - name: quotes
+    label: Quotes
+    hide: true
+    folder: src/content/quotes
+    extension: json
+    create: true
+    delete: true
+    fields:
+      - { label: Text, name: text, widget: text }
+      - { label: Author, name: author, widget: string }
+      - { label: Role, name: role, widget: string }
