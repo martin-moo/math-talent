@@ -1,0 +1,15 @@
+{
+  "shortName": "Fields-Medal",
+  "logo": "media/fieldsmedalfront.jpg",
+  "featured": true,
+  "date": "2035-07",
+  "title": "Fields-Medal-2035",
+  "images": [
+    "media/portrait.jpg"
+  ],
+  "links": [],
+  "id": "Fields-Medal-2035",
+  "description": "Fields Medal Award",
+  "award": "Fields-Medal-2035",
+  "competition": "."
+}
