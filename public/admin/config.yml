@@ -28,6 +28,7 @@ collections:
       - label: ID (slug — must equal the filename)
         name: id
         widget: string
+        pattern: ['^[a-z0-9][a-z0-9-]*$', 'Lowercase letters, numbers and dashes only (e.g. mmc-2027)']
         hint: URL-safe and stable, e.g. mmc-2027. The file is saved as <id>.json.
       - label: Title
         name: title
@@ -35,6 +36,8 @@ collections:
       - label: Competition
         name: competition
         widget: string
+        required: false
+        hint: Leave empty for awards that are not competitions (medals, prizes).
       - label: Short name
         name: shortName
         widget: string

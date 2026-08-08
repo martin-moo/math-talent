@@ -15,19 +15,24 @@ const achievements = defineCollection({
   schema: z.object({
     id: z.string(), // slug, stable — must equal the filename (checked in lib)
     title: z.string(),
-    competition: z.string(),
+    // §6.1: null for non-competition awards (medals, prizes) — the form and
+    // the UI both treat empty/null competition as "no competition".
+    competition: z.string().nullable().default(null),
     shortName: z.string(), // vertex label: "<year> · <shortName>"
     date: z.string().regex(/^\d{4}-\d{2}$/, 'ISO month, YYYY-MM'),
-    location: z.string().nullable(),
-    team: z.string().nullable(),
+    // Unknown or not-applicable values are null, never guessed (§6 editorial
+    // rule). default(null) absorbs a blank/omitted CMS field so an optional
+    // field left empty can never fail the build.
+    location: z.string().nullable().default(null),
+    team: z.string().nullable().default(null),
     award: z.string(),
-    score: z.string().nullable(),
-    rank: z.string().nullable(),
+    score: z.string().nullable().default(null),
+    rank: z.string().nullable().default(null),
     description: z.string(),
-    logo: z.string().nullable(), // null → typographic shortName chip
-    images: z.array(z.string()),
-    links: z.array(z.object({ label: z.string(), url: z.string().url() })),
-    featured: z.boolean(), // 3–5 max; drives the home strip
+    logo: z.string().nullable().default(null), // null → typographic shortName chip
+    images: z.array(z.string()).default([]),
+    links: z.array(z.object({ label: z.string(), url: z.string().url() })).default([]),
+    featured: z.boolean().default(false), // 3–5 max; drives the home strip
   }),
 });
 

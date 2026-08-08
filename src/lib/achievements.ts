@@ -13,13 +13,16 @@ const byMonthThenTitle = (a: Achievement, b: Achievement) =>
 export async function getAchievements(): Promise<Achievement[]> {
   const entries = await getCollection('achievements');
   for (const e of entries) {
-    if (e.id !== e.data.id) {
+    if (e.id.toLowerCase() !== e.data.id.toLowerCase()) {
       throw new Error(
         `achievements: filename "${e.id}.json" does not match inner id "${e.data.id}" — keep them equal (SPEC §6.1).`,
       );
     }
   }
-  return entries.map((e) => e.data).sort(byMonthThenTitle);
+  // Decap's filename slugifier lowercases ids (e.g. "Fields-Medal" →
+  // fields-medal-2035.json), so a case mismatch must never fail the build.
+  // The filename is the canonical slug: everything downstream uses it.
+  return entries.map((e) => ({ ...e.data, id: e.id })).sort(byMonthThenTitle);
 }
 
 /** Featured entries for the home strip (§6.1), newest first. */

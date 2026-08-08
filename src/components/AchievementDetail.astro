@@ -34,7 +34,7 @@ const defaultId = entries[entries.length - 1].id; // latest = default (§5.4)
         </header>
 
         <p class="detail-award">{e.award}</p>
-        <p class="detail-comp">{e.competition}</p>
+        {e.competition && <p class="detail-comp">{e.competition}</p>}
 
         <dl class="detail-facts">
           <div>
