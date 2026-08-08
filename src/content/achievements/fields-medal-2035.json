@@ -1,19 +1,19 @@
 {
-  "shortName": "Fields-Medal",
+  "shortName": "Fields Medal",
   "logo": "media/fieldsmedalfront.jpg",
-  "rank": "1",
+  "rank": "",
   "featured": true,
   "date": "2035-07",
-  "score": "100",
-  "location": "Morocco",
-  "title": "fields-medal-2035",
+  "score": "",
+  "location": "",
+  "title": "Fields Medal 2035",
   "images": [
     "media/portrait.jpg"
   ],
   "links": [],
-  "id": "fields-medal-2035",
+  "id": "Fields-Medal-2035",
   "description": "Fields Medal Award",
-  "team": "MathTalents",
-  "award": "Fields-Medal-2035",
-  "competition": "Fields"
+  "team": "Math-Talents ",
+  "award": "Fields Medal 2035",
+  "competition": "math"
 }
