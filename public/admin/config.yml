@@ -23,16 +23,19 @@ collections:
     create: true
     delete: true
     identifier_field: id
-    summary: "{{date}} · {{shortName}} — {{award}}"
+    summary: "{{date}} · {{shortName}}"
     fields:
       - label: ID (slug — must equal the filename)
         name: id
         widget: string
-        pattern: ['^[a-z0-9][a-z0-9-]*$', 'Lowercase letters, numbers and dashes only (e.g. mmc-2027)']
-        hint: URL-safe and stable, e.g. mmc-2027. The file is saved as <id>.json.
+        pattern: ['^[A-Za-z0-9][A-Za-z0-9-]*$', 'Letters, numbers and dashes only (e.g. Fields-Medal-2035)']
+        hint: URL-safe and stable, e.g. Fields-Medal-2035. Case is kept as typed; the file is saved as <id>.json.
       - label: Title
         name: title
         widget: string
+        required: false
+        default: ''
+        hint: Only id and date are required — everything else is optional.
       - label: Competition
         name: competition
         widget: string
@@ -41,6 +44,8 @@ collections:
       - label: Short name
         name: shortName
         widget: string
+        required: false
+        default: ''
         hint: Vertex label renders as "YYYY · <shortName>", e.g. IMO.
       - label: Date (month)
         name: date
@@ -58,6 +63,8 @@ collections:
       - label: Award
         name: award
         widget: string
+        required: false
+        default: ''
       - label: Score
         name: score
         widget: string
@@ -70,6 +77,8 @@ collections:
       - label: Description
         name: description
         widget: text
+        required: false
+        default: ''
       - label: Logo
         name: logo
         widget: image

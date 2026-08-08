@@ -1,8 +1,180 @@
 ---
+/**
+ * Contact — SPEC §9.
+ *
+ * Three paths, no backend and no third-party form service:
+ *   1. a Netlify Form (name, email, message) with a honeypot spam trap —
+ *      static HTML + `data-netlify`, so it needs zero server code and is
+ *      detected at build time by Netlify;
+ *   2. a plain `mailto:` link;
+ *   3. a LinkedIn link.
+ *
+ * The form POSTs to itself; Netlify intercepts it, stores the submission,
+ * then redirects to `/contact?ok` where a two-line script swaps in a
+ * thank-you. Bots that fill the visually hidden `bot-field` are dropped.
+ */
 import Base from '../layouts/Base.astro';
+import { profile } from '../lib/profile';
 ---
 
-<Base title="Contact — Akram Zakine">
+<Base title="Contact — Akram Zakine" description="Get in touch with Akram Zakine.">
   <h1>Contact</h1>
-  <p>Contact details will appear here.</p>
+  <p class="contact-lede">
+    The fastest ways to reach me are email and LinkedIn; the form below also
+    reaches my inbox.
+  </p>
+
+  <ul class="contact-direct">
+    <li>
+      <span class="contact-method">Email</span>
+      <a href={`mailto:${profile.email}`}>{profile.email}</a>
+    </li>
+    <li>
+      <span class="contact-method">LinkedIn</span>
+      <a href={profile.linkedin} rel="me">Akram Zakine</a>
+    </li>
+  </ul>
+
+  <form
+    id="contact-form"
+    class="contact-form"
+    name="contact"
+    method="POST"
+    action="/contact?ok"
+    data-netlify="true"
+    netlify-honeypot="bot-field"
+  >
+    <input type="hidden" name="form-name" value="contact" />
+
+    {/* Honeypot spam trap (§9): hidden by CSS, not the `hidden` attribute —
+        Netlify filters any submission that fills it. */}
+    <p class="hp" aria-hidden="true">
+      <label for="bot-field">Don't fill this out:</label>
+      <input id="bot-field" name="bot-field" type="text" tabindex="-1" autocomplete="off" />
+    </p>
+
+    <div class="field">
+      <label for="contact-name">Name</label>
+      <input id="contact-name" name="name" type="text" autocomplete="name" required />
+    </div>
+
+    <div class="field">
+      <label for="contact-email">Email</label>
+      <input id="contact-email" name="email" type="email" autocomplete="email" required />
+    </div>
+
+    <div class="field">
+      <label for="contact-message">Message</label>
+      <textarea id="contact-message" name="message" rows="6" required></textarea>
+    </div>
+
+    <button type="submit" class="contact-submit">Send message</button>
+  </form>
+
+  <p id="contact-thanks" hidden>
+    Thank you — your message has been sent. I'll get back to you.
+  </p>
 </Base>
+
+<script>
+  if (location.search.includes('ok')) {
+    const form = document.getElementById('contact-form');
+    const thanks = document.getElementById('contact-thanks');
+    if (form && thanks) {
+      form.hidden = true;
+      thanks.hidden = false;
+    }
+  }
+</script>
+
+<style>
+  .contact-lede {
+    max-width: 52ch;
+  }
+
+  .contact-direct {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0 0 2rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .contact-method {
+    display: inline-block;
+    width: 5.5rem;
+    font-size: var(--text--1);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+
+  .contact-form {
+    display: grid;
+    gap: 1rem;
+    max-width: 52ch;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--ink);
+  }
+
+  .field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .field label {
+    font-size: var(--text--1);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+
+  .field input,
+  .field textarea {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--hairline);
+    border-radius: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    line-height: var(--leading-body);
+  }
+
+  .field textarea {
+    resize: vertical;
+  }
+
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .contact-submit {
+    justify-self: start;
+    padding: 0.6rem 1.4rem;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-display);
+    font-size: var(--text-0);
+    cursor: pointer;
+  }
+
+  .contact-submit:hover,
+  .contact-submit:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+
+  #contact-thanks {
+    max-width: 52ch;
+  }
+
+  /* Honeypot (§9): present in the DOM for Netlify's spam filter but never
+     visible or focusable. Not the `hidden` attribute — that is what bots
+     learn to look for. */
+  .hp {
+    display: none;
+  }
+</style>

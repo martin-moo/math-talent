@@ -17,7 +17,7 @@ const { logo, shortName } = Astro.props;
     <img class="logo-chip" src={`/${logo}`} alt="" loading="lazy" decoding="async" />
   ) : (
     <span class="logo-chip text" aria-hidden="true">
-      {shortName}
+      {shortName || '·'}
     </span>
   )
 }

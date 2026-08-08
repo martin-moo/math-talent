@@ -14,21 +14,24 @@ const achievements = defineCollection({
   loader: glob({ pattern: '**/*.json', base: './src/content/achievements' }),
   schema: z.object({
     id: z.string(), // slug, stable — must equal the filename (checked in lib)
-    title: z.string(),
+    // General-achievement principle: only `id` (filename contract) and `date`
+    // (the porism's chronology key, §5.1) are hard requirements. Every other
+    // field is optional and the UI renders gracefully when empty.
+    title: z.string().default(''),
     // §6.1: null for non-competition awards (medals, prizes) — the form and
     // the UI both treat empty/null competition as "no competition".
     competition: z.string().nullable().default(null),
-    shortName: z.string(), // vertex label: "<year> · <shortName>"
+    shortName: z.string().default(''), // vertex label: "<year> · <shortName>"
     date: z.string().regex(/^\d{4}-\d{2}$/, 'ISO month, YYYY-MM'),
     // Unknown or not-applicable values are null, never guessed (§6 editorial
     // rule). default(null) absorbs a blank/omitted CMS field so an optional
     // field left empty can never fail the build.
     location: z.string().nullable().default(null),
     team: z.string().nullable().default(null),
-    award: z.string(),
+    award: z.string().default(''),
     score: z.string().nullable().default(null),
     rank: z.string().nullable().default(null),
-    description: z.string(),
+    description: z.string().default(''),
     logo: z.string().nullable().default(null), // null → typographic shortName chip
     images: z.array(z.string()).default([]),
     links: z.array(z.object({ label: z.string(), url: z.string().url() })).default([]),

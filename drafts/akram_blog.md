@@ -2,15 +2,6 @@
 - I downloaded some images for some achievements (I don't image for all achiements, Akram will add them after I give him the app)
 - toogle design poncelet's/ timeline [we will see if it's good or just keep only poncelet's design]
 - as conventional we want the experiences to be sorted from the last to old, so please find a way to mention the lastest echievement and also the direction to go from the lastest to first (you can use direct positive direction as in trigonometry)
-- download all the logos for me: "[ ] IMO → media/logos/imo.svg
-[ ] IOI → media/logos/ioi.svg
-[ ] IMC → media/logos/imc.svg
-[ ] Math&Maroc → media/logos/mathmaroc.svg
-[ ] OMB (Belgian Math Olympiad) → media/logos/omb.svg
-[ ] BMO (Balkan) → media/logos/bmo.svg
-[ ] BxMO (Benelux) → media/logos/bxmo.svg
-[ ] OFM (Francophone) → media/logos/ofm.svg
-[ ] BeCP/beOI → media/logos/becp.svg" 
 - where to put the blogs ? put an a small example there for exmaple about poncelet's theorem
 - we don't have the 'quotes' yet 
 - Domain ideas for Netlify: akram-zakine.com (but please because I just want to make a gift and in order to not take the domain, I prefer to do something like: Math-talent.com, I don't really know if I can deployed fully I think that would require my email istead of his email, the thing we don't want)
@@ -25,6 +16,17 @@
 - a post about: poncelet's theorem 
 
 - how can I transform the site to Akram (shall we need to guide him for deployment)
+
+- black them 
+- more solid styles, more complexe (suggestions )
+- 'achievements' not suitable there (design)
+- test design 'show the logo in porism' 
+- image layout correction (ex: fields medal image )
+
+- clicking an image of an achivement, require to return in order to see the site, which is not good, just a click should be enough to close the image and return to the site, also if there are three images and we want to see them all we shoud do this 'click image 1, return to site, click image 2, return to site, click image 3, return to site' which is not professional at all, why not clicking one image give the possibility of swiching to other images by showing a small arrow or by clicking keyboard arrows, with a trnasparent backroud in the empty area and one click anywhere closes the image display and shows the site. this is what it should be 
+
+- uppercase in id should be normal 
+
 
 ====
 - **The promise to honor:** Akram adds an achievement in `/admin` → commits →

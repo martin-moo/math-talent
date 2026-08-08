@@ -6,7 +6,7 @@
  * the figure, not a second trophy case.
  */
 import LogoChip from './LogoChip.astro';
-import { yearOf, type Achievement } from '../lib/achievements';
+import { labelOf, type Achievement } from '../lib/achievements';
 
 interface Props {
   entries: Achievement[]; // featured only, newest first
@@ -23,13 +23,11 @@ const { entries } = Astro.props;
         <li>
           <button type="button" class="featured-item" data-select={e.id}>
             <LogoChip logo={e.logo} shortName={e.shortName} />
-            <span class="f-body">
-              <span class="f-kicker">
-                {yearOf(e)} · {e.shortName}
+              <span class="f-body">
+                <span class="f-kicker">{labelOf(e)}</span>
+                {e.award && <span class="f-award">{e.award}</span>}
+                {e.rank && <span class="f-rank">{e.rank}</span>}
               </span>
-              <span class="f-award">{e.award}</span>
-              {e.rank && <span class="f-rank">{e.rank}</span>}
-            </span>
           </button>
         </li>
       ))

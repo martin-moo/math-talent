@@ -46,7 +46,8 @@ const metaParts = (e: Achievement) =>
               <LogoChip logo={e.logo} shortName={e.shortName} />
               <div class="t-main">
                 <p class="t-award">
-                  {e.award} <span class="t-short">· {e.shortName}</span>
+                  {e.award || e.shortName}
+                  {e.award && e.shortName && <span class="t-short"> · {e.shortName}</span>}
                 </p>
                 <p class="t-meta">{metaParts(e).join(' · ')}</p>
               </div>

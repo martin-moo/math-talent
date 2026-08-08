@@ -17,7 +17,7 @@
  * renderer negates y, which maps math-CCW to visual-CCW.
  */
 import { solveInnerScale, vertices, type Vec2 } from '../lib/poncelet/engine';
-import type { Achievement } from '../lib/achievements';
+import { type Achievement, labelOf, titleOf } from '../lib/achievements';
 
 interface Props {
   entries: Achievement[];
@@ -65,7 +65,8 @@ const TAG_DY = -15; // "Latest" tag stacked directly above the year label
 // time in the positive (counterclockwise) direction (SPEC §5.1).
 const atVertex = (k: number) => entries[n - 1 - k];
 const year = (e: Achievement) => e.date.slice(0, 4);
-const ariaLabel = (e: Achievement) => `${e.award}, ${e.shortName} ${year(e)}`;
+const ariaLabel = (e: Achievement) =>
+  [e.award, e.shortName, year(e)].filter(Boolean).join(', ') || titleOf(e);
 
 const DEFAULT_SELECTED = 0; // IMC 2026 — featured by default on load (§5.4)
 
@@ -162,10 +163,10 @@ const overlayStyle = [
             aria-pressed={k === DEFAULT_SELECTED ? 'true' : 'false'}
             data-index={k}
             data-id={e.id}
-            data-title={e.title}
+            data-title={titleOf(e)}
             transform={`translate(${f(SX(v))} ${f(SY(v))})`}
           >
-            <title>{e.title}</title>
+            <title>{titleOf(e)}</title>
             <circle class="hit" r="16" />
             <circle class="halo" r="11" />
             <circle class="dot" r="4.5" />
@@ -176,7 +177,7 @@ const overlayStyle = [
                 </tspan>
               )}
               <tspan class="vlabel-year" x={lab.x} y={lab.y} dy="0.35em">
-                {`${year(e)} · ${e.shortName}`}
+                {labelOf(e)}
               </tspan>
             </text>
           </g>
@@ -196,7 +197,7 @@ const overlayStyle = [
   </div>
 
   <figcaption class="poncelet-status" aria-live="polite">
-    {atVertex(DEFAULT_SELECTED).title}
+    {atVertex(DEFAULT_SELECTED) && titleOf(atVertex(DEFAULT_SELECTED))}
   </figcaption>
 </figure>
 
@@ -205,7 +206,7 @@ const overlayStyle = [
 <section class="visually-hidden" aria-label="Achievements list">
   <h2>Achievements</h2>
   <ul>
-    {[...entries].reverse().map((e) => <li>{e.title}</li>)}
+    {[...entries].reverse().map((e) => <li>{titleOf(e)}</li>)}
   </ul>
 </section>
 

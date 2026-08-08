@@ -9,7 +9,12 @@
  * the plain list (§5.6).
  */
 import LogoChip from './LogoChip.astro';
-import { formatMonth, yearOf, type Achievement } from '../lib/achievements';
+import {
+  formatMonth,
+  labelOf,
+  titleOf,
+  type Achievement,
+} from '../lib/achievements';
 
 interface Props {
   entries: Achievement[]; // chronological ascending
@@ -26,14 +31,12 @@ const defaultId = entries[entries.length - 1].id; // latest = default (§5.4)
         <header class="detail-head">
           <LogoChip logo={e.logo} shortName={e.shortName} />
           <div>
-            <p class="detail-kicker">
-              {yearOf(e)} · {e.shortName}
-            </p>
-            <h3 class="detail-title">{e.title}</h3>
+            <p class="detail-kicker">{labelOf(e)}</p>
+            <h3 class="detail-title">{titleOf(e)}</h3>
           </div>
         </header>
 
-        <p class="detail-award">{e.award}</p>
+        {e.award && <p class="detail-award">{e.award}</p>}
         {e.competition && <p class="detail-comp">{e.competition}</p>}
 
         <dl class="detail-facts">
@@ -67,7 +70,7 @@ const defaultId = entries[entries.length - 1].id; // latest = default (§5.4)
           )}
         </dl>
 
-        <p class="detail-desc">{e.description}</p>
+        {e.description && <p class="detail-desc">{e.description}</p>}
 
         {e.images.length > 0 && (
           <ul class="detail-images">
@@ -76,7 +79,7 @@ const defaultId = entries[entries.length - 1].id; // latest = default (§5.4)
                 <a href={`/${src}`}>
                   <img
                     src={`/${src}`}
-                    alt={`${e.title} — photo ${i + 1}`}
+                    alt={`${titleOf(e)} — photo ${i + 1}`}
                     loading="lazy"
                     decoding="async"
                   />
