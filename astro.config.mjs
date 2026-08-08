@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
@@ -8,6 +9,8 @@ export default defineConfig({
   // Canonical origin — the free Netlify address planned in SPEC §13
   // (stage 9). Required by @astrojs/rss for absolute item URLs.
   site: 'https://math-talent.netlify.app',
+  // Sitemap for SEO (SPEC §stage 8); `site` above is the canonical origin.
+  integrations: [sitemap()],
   markdown: {
     // SPEC §7: KaTeX is non-negotiable — $…$ / $$…$$ everywhere in posts.
     remarkPlugins: [remarkMath],

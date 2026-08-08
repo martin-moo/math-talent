@@ -168,3 +168,53 @@ main > :first-child {
   white-space: nowrap;
   border: 0;
 }
+
+/* ==========================================================================
+   Print (§stage 8). Paper gets the static, honest record: the figure, the
+   plain achievements list, and the prose — no buttons, no drift, no chrome
+   that only means something on a screen.
+   ========================================================================== */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  /* Controls and readouts that are meaningless on paper. */
+  .achview-toggle,
+  .featured-strip,
+  .poncelet-status,
+  #poncelet-help,
+  .site-header,
+  .site-footer {
+    display: none !important;
+  }
+
+  .poncelet svg {
+    cursor: default;
+  }
+
+  /* The plain list (§5.6) becomes the printed achievements record. */
+  section[aria-label="Achievements list"] {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  section[aria-label="Achievements list"] h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #444;
+  }
+}

@@ -17,6 +17,10 @@ const {
   description = 'Akram Zakine — mathematical portfolio.',
 } = Astro.props;
 
+// Absolute URLs for OG/Twitter cards (§stage 8: social image + meta).
+const url = new URL(Astro.url.pathname, Astro.site);
+const image = new URL('/media/social-card.jpg', Astro.site);
+
 const nav = [
   { href: '/', label: 'Home' },
   { href: '/writings', label: 'Writings' },
@@ -35,6 +39,17 @@ const isCurrent = (href: string) =>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    {/* Social preview cards (SPEC §stage 8): one shared card, per-page URL. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Akram Zakine" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={image} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
     <link
       rel="alternate"
       type="application/rss+xml"

@@ -30,19 +30,29 @@ const featured = featuredOf(entries);
   {/* Netlify Identity on the homepage: the invite/recovery email links land
       here by default (SPEC §8). The widget is passive until it sees a token
       in the URL; it processes it and shows the set-password modal. After
-      login we carry the editor straight to /admin. Loaded only on this page
-      and on /admin — nowhere else (SPEC §5.7). */}
-  <script is:inline slot="head" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+      login we carry the editor straight to /admin.
+      Loaded only when a token is actually present (SPEC §5.7): this site has
+      no anchor links, so any non-empty hash is the identity flow. On an
+      ordinary visit the widget never loads — no third-party script on the
+      critical path. On /admin it loads unconditionally. */}
   <script is:inline slot="head">
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on('init', function (user) {
-        if (!user) {
-          window.netlifyIdentity.on('login', function () {
-            document.location.href = '/admin/';
-          });
-        }
-      });
-    }
+    (function () {
+      var hash = window.location.hash;
+      if (!hash) return;
+      var s = document.createElement('script');
+      s.src = 'https://identity.netlify.com/v1/netlify-identity-widget.js';
+      s.async = true;
+      s.onload = function () {
+        window.netlifyIdentity.on('init', function (user) {
+          if (!user) {
+            window.netlifyIdentity.on('login', function () {
+              document.location.href = '/admin/';
+            });
+          }
+        });
+      };
+      document.head.appendChild(s);
+    })();
   </script>
 
   <h1>{profile.name}</h1>
