@@ -1,17 +1,17 @@
 {
-  "id": "omb-2024",
-  "title": "First Place — OMB 2024",
-  "competition": "Olympiade Mathématique Belge",
   "shortName": "OMB",
-  "date": "2024-05",
-  "location": "Belgium",
-  "team": null,
-  "award": "First Place (MAXI category)",
-  "score": null,
-  "rank": "1st",
-  "description": "Belgian national champion for the second consecutive year.",
   "logo": "media/logos/omb.png",
+  "rank": "1st",
+  "featured": false,
+  "date": "2024-05",
+  "score": null,
+  "location": "Belgium",
+  "title": "First Place — OMB 2024",
   "images": [],
   "links": [],
-  "featured": false
+  "id": "omb-2024",
+  "description": "Belgian national champion for the second consecutive year.",
+  "team": null,
+  "award": "First Place",
+  "competition": "Olympiade Mathématique Belge"
 }
