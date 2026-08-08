@@ -1,6 +1,7 @@
 # Netlify configuration — Akram Zakine · Mathematical Portfolio
-# Stage 0 placeholder. Only static build settings for now;
-# Forms / Identity get wired in stages 6–7 (see drafts/BUILD_GUIDE.md).
+# Static build settings only. Forms are detected at build time from the
+# data-netlify attribute on the contact form; Identity + Git Gateway are
+# enabled in the Netlify UI (site settings) — no config needed here.
 
 [build]
   command = "npm run build"

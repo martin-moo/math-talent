@@ -11,7 +11,7 @@ media_folder: public/media
 # and components prepend "/" at render time — so public_folder must be "media".
 public_folder: media
 
-site_url: https://gentle-cuchufli-378a05.netlify.app
+site_url: https://math-talent.netlify.app
 
 collections:
   # SPEC §6.1 — Achievements (one JSON per entry, filename = id)
